@@ -97,6 +97,10 @@ def readLangs(lang1, lang2, reverse=False):
 
 
 def filterPair(p):
+
+    if len(p) > 2:
+        p = p[-2:]
+
     return (
         len(p[0].split(" ")) < MAX_LENGTH
         and len(p[1].split(" ")) < MAX_LENGTH
@@ -105,7 +109,7 @@ def filterPair(p):
 
 
 def filterPairs(pairs):
-    return [pair for pair in pairs if filterPair(pair)]
+    return [pair[-2:] for pair in pairs if filterPair(pair)]
 
 
 def prepareData(lang1, lang2, reverse=False):
@@ -144,8 +148,8 @@ def tensorFromSentence(lang, sentence):
 #     return (input_tensor, target_tensor)
 
 
-def get_dataloader(batch_size):
-    input_lang, output_lang, pairs = prepareData("eng", "fra", True)
+def get_dataloader(batch_size, lang1="eng", lang2="deu"):
+    input_lang, output_lang, pairs = prepareData(lang1, lang2, True)
 
     n = len(pairs)
     input_ids = np.zeros((n, MAX_LENGTH), dtype=np.int32)
@@ -171,7 +175,7 @@ def get_dataloader(batch_size):
 
 
 if __name__ == "__main__":
-    # input_lang, output_lang, pairs = prepareData("eng", "fra", True)
+    # input_lang, output_lang, pairs = prepareData("eng", "deu", True)
     # print(random.choice(pairs))
 
     input_lang1, output_lang1, loader = get_dataloader(32)

@@ -182,7 +182,10 @@ if __name__ == "__main__":
     hidden_size = 128
     batch_size = 32
 
-    input_lang, output_lang, train_dataloader = get_dataloader(batch_size)
+    lang1 = "eng"
+    lang2 = "deu"
+
+    input_lang, output_lang, train_dataloader = get_dataloader(batch_size, lang1, lang2)
 
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
     decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
@@ -190,5 +193,5 @@ if __name__ == "__main__":
     train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
 
     # save encoder and decoder to file
-    torch.save(encoder.state_dict(), "encoder_att.pth")
-    torch.save(decoder.state_dict(), "decoder_att.pth")
+    torch.save(encoder.state_dict(), f"encoder_att_{lang1}.pth")
+    torch.save(decoder.state_dict(), f"decoder_att_{lang2}.pth")
