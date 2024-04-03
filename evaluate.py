@@ -31,9 +31,20 @@ def evaluate(encoder, decoder, sentence, input_lang, output_lang):
     return decoded_words, decoder_attn
 
 
-def evaluateRandomly(encoder, decoder, n=10):
+def evaluateRandomly(encoder, decoder, n=10, lang1="eng", lang2="deu", sentence=""):
 
-    input_lang, output_lang, pairs = prepareData("eng", "fra", True)
+    input_lang, output_lang, pairs = prepareData(lang1, lang2, True)
+
+    if sentence:
+
+        # sentence to lower case
+        sentence = sentence.lower()
+
+        output_words, _ = evaluate(encoder, decoder, sentence, input_lang, output_lang)
+        output_sentence = " ".join(output_words)
+        print(">", sentence)
+        print("<", output_sentence)
+        return
 
     for i in range(n):
         pair = random.choice(pairs)
@@ -45,28 +56,28 @@ def evaluateRandomly(encoder, decoder, n=10):
         print("")
 
 
-def evaluate_att(input_lang, output_lang):
+def evaluate_att(input_lang, output_lang, lang1="eng", lang2="deu", sentence=""):
 
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
     decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
     # load encoder and decoder from file
-    encoder.load_state_dict(torch.load("encoder_att.pth"))
-    decoder.load_state_dict(torch.load("decoder_att.pth"))
+    encoder.load_state_dict(torch.load(f"encoder_att_{lang1}_{lang2}.pth"))
+    decoder.load_state_dict(torch.load(f"decoder_att_{lang1}_{lang2}.pth"))
 
-    evaluateRandomly(encoder, decoder)
+    evaluateRandomly(encoder, decoder, lang1=lang1, lang2=lang2, sentence=sentence)
 
 
-def evaluate_rnn(input_lang, output_lang):
+def evaluate_rnn(input_lang, output_lang, lang1="eng", lang2="deu", sentence=""):
 
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
     decoder = DecoderRNN(hidden_size, output_lang.n_words).to(device)
 
     # load encoder and decoder from file
-    encoder.load_state_dict(torch.load("encoder_rnn.pth"))
-    decoder.load_state_dict(torch.load("decoder_rnn.pth"))
+    encoder.load_state_dict(torch.load(f"encoder_rnn_{lang1}_{lang2}.pth"))
+    decoder.load_state_dict(torch.load(f"decoder_rnn_{lang1}_{lang2}.pth"))
 
-    evaluateRandomly(encoder, decoder)
+    evaluateRandomly(encoder, decoder, lang1=lang1, lang2=lang2, sentence=sentence)
 
 
 if __name__ == "__main__":
@@ -74,7 +85,16 @@ if __name__ == "__main__":
     hidden_size = 128
     batch_size = 32
 
-    input_lang, output_lang, _ = get_dataloader(batch_size)
+    lang1 = "eng"
+    lang2 = "deu"
 
-    evaluate_att(input_lang, output_lang)
+    input_lang, output_lang, _ = get_dataloader(batch_size, lang1, lang2)
+
+    evaluate_att(
+        input_lang,
+        output_lang,
+        lang1=lang1,
+        lang2=lang2,
+        sentence="es ist schon zehn uhr",
+    )
     # evaluate_rnn(input_lang, output_lang)

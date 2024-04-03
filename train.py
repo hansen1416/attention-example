@@ -18,12 +18,26 @@ class EncoderRNN(nn.Module):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
 
+        # `input_size` is the number of words in the input language
+        # `hidden_size` is the size of the hidden states
+        # what `nn.Embedding` does is it creates a lookup table that maps each word to a vector of size `hidden_size`
+        # if `hidden_size` is 128, then each word will be represented by a vector of size 128, which serve like a index to the word
+        # `nn.Embedding` is like a linear layer that is used to map the indices of the words to their corresponding vectors
         self.embedding = nn.Embedding(input_size, hidden_size)
+        # `nn.GRU` use Gated Mechanism, return output, hidden
+        # output size is (L, D∗H_out),
+        # where L is the length of the input sequence
+        # D is the number of directions (1 for unidirectional, 2 for bidirectional)
+        # H_out is the hidden size
+        # hidden size is (D∗num_layers, batch_size, H_out)
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, input):
+        # `embedded` will have the shape of (`batch_size, MAX_LENGTH, hidden_size`)
+        # where th3 3rd dimenison is like indices of the words
         embedded = self.dropout(self.embedding(input))
+
         output, hidden = self.gru(embedded)
         return output, hidden
 
@@ -193,5 +207,5 @@ if __name__ == "__main__":
     train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
 
     # save encoder and decoder to file
-    torch.save(encoder.state_dict(), f"encoder_att_{lang1}.pth")
-    torch.save(decoder.state_dict(), f"decoder_att_{lang2}.pth")
+    torch.save(encoder.state_dict(), f"encoder_att_{lang1}_{lang2}.pth")
+    torch.save(decoder.state_dict(), f"decoder_att_{lang1}_{lang2}.pth")
