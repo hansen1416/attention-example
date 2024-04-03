@@ -25,7 +25,7 @@ class EncoderRNN(nn.Module):
         # `nn.Embedding` is like a linear layer that is used to map the indices of the words to their corresponding vectors
         self.embedding = nn.Embedding(input_size, hidden_size)
         # `nn.GRU` use Gated Mechanism, return output, hidden
-        # output size is (L, D∗H_out),
+        # output size is (batch_size, L, D∗H_out), when batch_first=True
         # where L is the length of the input sequence
         # D is the number of directions (1 for unidirectional, 2 for bidirectional)
         # H_out is the hidden size
@@ -37,7 +37,8 @@ class EncoderRNN(nn.Module):
         # `embedded` will have the shape of (`batch_size, MAX_LENGTH, hidden_size`)
         # where th3 3rd dimenison is like indices of the words
         embedded = self.dropout(self.embedding(input))
-
+        # output shape is (batch_size, MAX_LENGTH, hidden_size)
+        # hidden shape is (1, batch_size, hidden_size)
         output, hidden = self.gru(embedded)
         return output, hidden
 
@@ -50,12 +51,15 @@ class BahdanauAttention(nn.Module):
         self.Va = nn.Linear(hidden_size, 1)
 
     def forward(self, query, keys):
+        # query shape is (batch_size, 1, hidden_size)
+        # keys shape is (batch_size, MAX_LENGTH, hidden_size), `encoder_outputs`
         scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
         scores = scores.squeeze(2).unsqueeze(1)
 
         weights = F.softmax(scores, dim=-1)
         context = torch.bmm(weights, keys)
-
+        # context shape is (batch_size, 1, hidden_size)
+        # weights shape is (batch_size, 1, MAX_LENGTH)
         return context, weights
 
 
@@ -69,6 +73,8 @@ class AttnDecoderRNN(nn.Module):
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, encoder_outputs, encoder_hidden, target_tensor=None):
+        # `encoder_outputs` shape is (batch_size, MAX_LENGTH, hidden_size)
+        # `encoder_hidden` shape is (1, batch_size, hidden_size)
         batch_size = encoder_outputs.size(0)
         decoder_input = torch.empty(
             batch_size, 1, dtype=torch.long, device=device
@@ -78,6 +84,9 @@ class AttnDecoderRNN(nn.Module):
         attentions = []
 
         for i in range(MAX_LENGTH):
+            # decoder_output shape is (batch_size, 1, n_words in output_lang)
+            # decoder_hidden shape is (1, batch_size, hidden_size)
+            # attn_weights shape is (batch_size, 1, MAX_LENGTH)
             decoder_output, decoder_hidden, attn_weights = self.forward_step(
                 decoder_input, decoder_hidden, encoder_outputs
             )
@@ -94,20 +103,37 @@ class AttnDecoderRNN(nn.Module):
                     -1
                 ).detach()  # detach from history as input
 
+        # decoder_outputs shape is (batch_size, MAX_LENGTH, n_words in output_lang)
         decoder_outputs = torch.cat(decoder_outputs, dim=1)
         decoder_outputs = F.log_softmax(decoder_outputs, dim=-1)
+
+        # attentions shape is (batch_size, MAX_LENGTH, MAX_LENGTH), but it is not used
         attentions = torch.cat(attentions, dim=1)
 
         return decoder_outputs, decoder_hidden, attentions
 
     def forward_step(self, input, hidden, encoder_outputs):
+        # input shape is (batch_size, 1)
+        # hidden shape is (1, batch_size, hidden_size)
+        # encoder_outputs shape is (batch_size, MAX_LENGTH, hidden_size)
+        # embedded shape is (batch_size, 1, hidden_size)
         embedded = self.dropout(self.embedding(input))
 
+        # query shape is (batch_size, 1, hidden_size)
         query = hidden.permute(1, 0, 2)
+
+        # context shape is (batch_size, 1, hidden_size)
+        # attn_weights shape is (batch_size, 1, MAX_LENGTH)
         context, attn_weights = self.attention(query, encoder_outputs)
+
+        # input_gru shape is (batch_size, 1, 2 * hidden_size), concatenate `embedded` and `context`
         input_gru = torch.cat((embedded, context), dim=2)
 
+        # output shape is (batch_size, 1, hidden_size)
+        # hidden shape is (1, batch_size, hidden_size)
         output, hidden = self.gru(input_gru, hidden)
+
+        # output shape is (batch_size, 1, n_words in output_lang)
         output = self.out(output)
 
         return output, hidden, attn_weights
@@ -127,6 +153,8 @@ def train_epoch(
         encoder_outputs, encoder_hidden = encoder(input_tensor)
         decoder_outputs, _, _ = decoder(encoder_outputs, encoder_hidden, target_tensor)
 
+        # decoder_outputs.view(-1, decoder_outputs.size(-1)).shape) is of shape (batch_size * MAX_LENGTH, n_words in output_lang)
+        # target_tensor.view(-1).shape is of shape (batch_size * MAX_LENGTH)
         loss = criterion(
             decoder_outputs.view(-1, decoder_outputs.size(-1)), target_tensor.view(-1)
         )

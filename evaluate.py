@@ -15,6 +15,7 @@ def evaluate(encoder, decoder, sentence, input_lang, output_lang):
         input_tensor = tensorFromSentence(input_lang, sentence)
 
         encoder_outputs, encoder_hidden = encoder(input_tensor)
+        # no target tensor here, so no teacher forcing
         decoder_outputs, decoder_hidden, decoder_attn = decoder(
             encoder_outputs, encoder_hidden
         )
@@ -95,6 +96,6 @@ if __name__ == "__main__":
         output_lang,
         lang1=lang1,
         lang2=lang2,
-        sentence="es ist schon zehn uhr",
+        sentence="es ist zehn uhr",
     )
     # evaluate_rnn(input_lang, output_lang)
