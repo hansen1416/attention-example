@@ -56,6 +56,13 @@ class BahdanauAttention(nn.Module):
         scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
         scores = scores.squeeze(2).unsqueeze(1)
 
+        # # potential modification for regression tasks
+        # # Replace softmax with linear activation and scaling
+        # weights = torch.tanh(scores)  # Use tanh for smooth attention weights
+
+        # # Maintain weights sum for interpretability (optional)
+        # weights = weights / weights.sum(dim=-1, keepdim=True)
+
         weights = F.softmax(scores, dim=-1)
         context = torch.bmm(weights, keys)
         # context shape is (batch_size, 1, hidden_size)
