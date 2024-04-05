@@ -57,3 +57,4 @@ models/
 checkpoints/
 output.json
 output.npy
+*.whl
