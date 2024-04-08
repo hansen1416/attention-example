@@ -96,6 +96,6 @@ if __name__ == "__main__":
         output_lang,
         lang1=lang1,
         lang2=lang2,
-        sentence="es ist zehn uhr",
+        # sentence="es ist zehn uhr",
     )
     # evaluate_rnn(input_lang, output_lang)
