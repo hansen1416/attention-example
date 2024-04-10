@@ -1,3 +1,5 @@
+# https://magazine.sebastianraschka.com/p/understanding-and-coding-self-attention
+
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -20,6 +22,8 @@ vocab_size = 50_000
 embed = torch.nn.Embedding(vocab_size, 3)
 # torch.Size([6, 3])
 embedded_sentence = embed(sentence_int).detach()
+
+print(embedded_sentence.shape)
 
 
 class SelfAttention(nn.Module):
@@ -56,7 +60,7 @@ class SelfAttention(nn.Module):
         keys = x @ self.W_key
         # (sentence_length, embedding_size) @ (embedding_size, d_out_kq) = (sentence_length, d_out_kq)
         # each item in `queries` is the queries weights for each word in the sentence
-        # represents what information a specific element in the sequence needs from others.
+        # represents what information a specific element in the sequence needs from others. therefore keys.T
         queries = x @ self.W_query
         # (sentence_length, embedding_size) @ (embedding_size, d_out_v) = (sentence_length, d_out_v)
         # each item in `values` is the values weights for each word in the sentence
@@ -86,5 +90,28 @@ d_in, d_out_kq, d_out_v = 3, 2, 4
 sa = SelfAttention(d_in, d_out_kq, d_out_v)
 
 res = sa(embedded_sentence)
+
+print(res, res.shape)
+
+
+class MultiHeadAttentionWrapper(nn.Module):
+
+    def __init__(self, d_in, d_out_kq, d_out_v, num_heads):
+        super().__init__()
+        # each self-attention head will have its own set of weight matrices, they work in parallel
+        self.heads = nn.ModuleList(
+            [SelfAttention(d_in, d_out_kq, d_out_v) for _ in range(num_heads)]
+        )
+
+    def forward(self, x):
+        # the shape of the output tensor is (sentence_length, num_heads * d_out_v)
+        return torch.cat([head(x) for head in self.heads], dim=-1)
+
+
+d_in, d_out_kq, d_out_v, num_heads = 3, 2, 4, 3
+
+mha = MultiHeadAttentionWrapper(d_in, d_out_kq, d_out_v, num_heads)
+
+res = mha(embedded_sentence)
 
 print(res, res.shape)
