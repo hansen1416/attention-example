@@ -95,6 +95,17 @@ print(res, res.shape)
 
 
 class MultiHeadAttentionWrapper(nn.Module):
+    """
+    each attention head in multi-head attention can potentially learn to focus on different parts of the input sequence,
+    capturing various aspects or relationships within the data.
+    This diversity in representation is key to the success of multi-head attention.
+
+    Multi-head attention can also be more efficient, especially in terms of parallel computation.
+    Each head can be processed independently,
+    making it well-suited for modern hardware accelerators like GPUs or TPUs that excel at parallel processing.
+
+    eg. the 7B Llama 2 model uses 32 attention heads.
+    """
 
     def __init__(self, d_in, d_out_kq, d_out_v, num_heads):
         super().__init__()
