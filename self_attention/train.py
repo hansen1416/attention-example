@@ -140,3 +140,12 @@ class SelfAttention(nn.Module):
         # (sentence_length, sentence_length) @ (sentence_length, d_out_v) = (sentence_length, d_out_v)
         context_vec = attn_weights @ values
         return context_vec
+
+
+d_in, d_out_kq, d_out_v = 3, 2, 4
+
+sa = SelfAttention(d_in, d_out_kq, d_out_v)
+
+res = sa(embedded_sentence)
+
+print(res, res.shape)
