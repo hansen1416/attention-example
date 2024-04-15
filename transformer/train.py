@@ -74,6 +74,8 @@ for epoch in range(100):
 
         epoch_loss += loss.item()
 
+    epoch_loss /= len(train_dataloader)
+
     print(f"Epoch: {epoch}, Loss: {epoch_loss}")
 
     if epoch and epoch % 10 == 0:
