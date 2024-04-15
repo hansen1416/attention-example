@@ -201,13 +201,13 @@ class Transformer(nn.Module):
 
         src_embedded = self.encoder_embedding(src)
 
-        print("src_embedded", src_embedded.size())
+        # print("src_embedded", src_embedded.size())
 
         src_embedded = self.dropout(self.positional_encoding(src_embedded))
 
         tgt_embedded = self.decoder_embedding(tgt)
 
-        print("tgt_embedded", tgt_embedded.size())
+        # print("tgt_embedded", tgt_embedded.size())
 
         tgt_embedded = self.dropout(self.positional_encoding(tgt_embedded))
 
