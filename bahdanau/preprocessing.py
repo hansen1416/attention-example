@@ -163,6 +163,11 @@ def get_dataloader(batch_size, lang1="eng", lang2="deu"):
         input_ids[idx, : len(inp_ids)] = inp_ids
         target_ids[idx, : len(tgt_ids)] = tgt_ids
 
+    # print("------------------------------")
+    # print(input_ids)
+    # print(target_ids)
+    # print(input_ids.shape, target_ids.shape)
+
     train_data = TensorDataset(
         torch.LongTensor(input_ids).to(device), torch.LongTensor(target_ids).to(device)
     )
@@ -175,15 +180,25 @@ def get_dataloader(batch_size, lang1="eng", lang2="deu"):
 
 
 if __name__ == "__main__":
-    # input_lang, output_lang, pairs = prepareData("eng", "deu", True)
-    # print(random.choice(pairs))
+
+    # import pickle
+
+    input_lang, output_lang, pairs = prepareData("eng", "deu", True)
+
+    # with open("eng-deu.pkl", "wb") as f:
+    #     pickle.dump(pairs, f)
+
+    print(len(pairs))
+    print(random.choice(pairs))
 
     input_lang1, output_lang1, loader = get_dataloader(32)
 
     # print(input_lang == input_lang1, output_lang == output_lang1)
 
-    for batch in loader:
-        print(batch)
-        print(batch[0].shape, batch[1].shape)
+    print(len(loader))
 
-        break
+    # for batch in loader:
+    #     # print(batch)
+    #     # print(batch[0].shape, batch[1].shape)
+
+    #     break

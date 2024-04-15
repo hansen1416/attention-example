@@ -1,0 +1,17 @@
+
+
+tmp/
+tmp*
+.env
+
+data
+*.csv
+
+MUJOCO_LOG.TXT
+
+*.pth
+runs/
+models/
+checkpoints/
+output.json
+output.npy
