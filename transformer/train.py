@@ -10,6 +10,8 @@ from preprocessing import prepare_lang
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+print(f"device {device}")
+
 with open(os.path.join("..", "data", "eng-deu.pkl"), "rb") as f:
     raw_data = pickle.load(f)
 

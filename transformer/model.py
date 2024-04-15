@@ -5,6 +5,8 @@ import torch.utils.data as data
 import math
 import copy
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
@@ -192,6 +194,9 @@ class Transformer(nn.Module):
         nopeak_mask = (
             1 - torch.triu(torch.ones(1, seq_length, seq_length), diagonal=1)
         ).bool()
+
+        nopeak_mask = nopeak_mask.to(device)
+
         tgt_mask = tgt_mask & nopeak_mask
         return src_mask, tgt_mask
 
