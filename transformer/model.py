@@ -198,12 +198,18 @@ class Transformer(nn.Module):
     def forward(self, src, tgt):
         src_mask, tgt_mask = self.generate_mask(src, tgt)
         # Compute source and target embeddings, and apply positional encoding and dropout.
-        src_embedded = self.dropout(
-            self.positional_encoding(self.encoder_embedding(src))
-        )
-        tgt_embedded = self.dropout(
-            self.positional_encoding(self.decoder_embedding(tgt))
-        )
+
+        src_embedded = self.encoder_embedding(src)
+
+        print("src_embedded", src_embedded.size())
+
+        src_embedded = self.dropout(self.positional_encoding(src_embedded))
+
+        tgt_embedded = self.decoder_embedding(tgt)
+
+        print("tgt_embedded", tgt_embedded.size())
+
+        tgt_embedded = self.dropout(self.positional_encoding(tgt_embedded))
 
         enc_output = src_embedded
         for enc_layer in self.encoder_layers:

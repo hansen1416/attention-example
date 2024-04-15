@@ -24,13 +24,12 @@ transformer = Transformer(
 )
 
 # Generate random sample data
-src_data = torch.randint(
-    1, src_vocab_size, (64, max_seq_length)
-)  # (batch_size, seq_length)
-tgt_data = torch.randint(
-    1, tgt_vocab_size, (64, max_seq_length)
-)  # (batch_size, seq_length)
+# (batch_size, seq_length)
+src_data = torch.randint(1, src_vocab_size, (64, max_seq_length))
+# (batch_size, seq_length)
+tgt_data = torch.randint(1, tgt_vocab_size, (64, max_seq_length))
 
+# print(src_data.size(), tgt_data.size())
 
 criterion = nn.CrossEntropyLoss(ignore_index=0)
 optimizer = optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
@@ -39,10 +38,15 @@ transformer.train()
 
 for epoch in range(100):
     optimizer.zero_grad()
-    output = transformer(src_data, tgt_data[:, :-1])
+    # output = transformer(src_data, tgt_data[:, :-1])
+    # loss = criterion(
+    #     output.contiguous().view(-1, tgt_vocab_size),
+    #     tgt_data[:, 1:].contiguous().view(-1),
+    # )
+    output = transformer(src_data, tgt_data)
     loss = criterion(
         output.contiguous().view(-1, tgt_vocab_size),
-        tgt_data[:, 1:].contiguous().view(-1),
+        tgt_data.contiguous().view(-1),
     )
     loss.backward()
     optimizer.step()
