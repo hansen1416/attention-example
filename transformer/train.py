@@ -80,4 +80,6 @@ for epoch in range(100):
 
     if epoch and epoch % 10 == 0:
         # save model to local file
-        torch.save(transformer.state_dict(), f"transformer_{epoch}.pth")
+        torch.save(
+            transformer.state_dict(), os.path.join("models", f"transformer_{epoch}.pth")
+        )
